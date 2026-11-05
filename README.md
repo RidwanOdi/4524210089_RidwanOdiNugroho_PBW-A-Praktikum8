@@ -1,12 +1,29 @@
-# TUGAS 3: ANALISIS DAN DOKUMENTASI
+# 📚 AUTHBOOK — SISTEM PENGELOLAAN DATA BUKU
+## TUGAS 3: ANALISIS DAN DOKUMENTASI
+### PRAKTIKUM PEMROGRAMAN BERBASIS WEB — PERTEMUAN 8
 
-## 1. PENJELASAN ARSITEKTUR (7 POIN)
+**Identitas Mahasiswa**
 
-### 1.1 Diagram ERD (Entity Relationship Diagram)
+| Keterangan | Informasi |
+|---|---|
+| Nama | Ridwan Odi Nugroho |
+| NPM | 4524210089 |
+| Program Studi | Teknik Informatika |
+| Universitas | Universitas Pancasila |
+| Mata Kuliah | Pemrograman Berbasis Web |
+| Praktikum | Pertemuan 8 |
 
-Aplikasi Authbook merupakan aplikasi pengelolaan data buku yang menggunakan dua tabel utama, yaitu tabel `authors` dan tabel `books`. Kedua tabel tersebut saling berhubungan menggunakan relasi One-to-Many.
+---
 
-Berikut merupakan rancangan ERD aplikasi Authbook:
+# 1. PENJELASAN ARSITEKTUR (7 POIN)
+
+## 1.1 Diagram ERD (Entity Relationship Diagram)
+
+Authbook merupakan aplikasi pengelolaan data buku berbasis Laravel dan Filament. Aplikasi ini menggunakan dua tabel utama, yaitu `authors` dan `books`.
+
+Tabel `authors` digunakan untuk menyimpan informasi penulis, sedangkan tabel `books` digunakan untuk menyimpan informasi buku. Kedua tabel memiliki hubungan melalui kolom `author_id` yang berfungsi sebagai Foreign Key.
+
+Berikut merupakan diagram ERD aplikasi Authbook:
 
 ```mermaid
 erDiagram
@@ -35,24 +52,25 @@ erDiagram
 
 **Keterangan:**
 
-1. Tabel `authors` digunakan untuk menyimpan informasi penulis buku.
-2. Tabel `books` digunakan untuk menyimpan informasi buku.
-3. Primary Key (PK) pada tabel authors adalah `id`.
-4. Primary Key (PK) pada tabel books adalah `id`.
-5. Foreign Key (FK) pada tabel books adalah `author_id`.
-6. ISBN digunakan sebagai identitas unik buku.
+1. `authors` merupakan tabel yang menyimpan data penulis buku.
+2. `books` merupakan tabel yang menyimpan data buku.
+3. `id` pada tabel authors merupakan Primary Key.
+4. `id` pada tabel books merupakan Primary Key.
+5. `author_id` pada tabel books merupakan Foreign Key.
+6. `isbn` digunakan sebagai identitas unik buku.
+7. `created_at` dan `updated_at` digunakan untuk mencatat waktu pembuatan dan perubahan data.
 
-### 1.2 Penjelasan Relasi Antar Tabel
+## 1.2 Penjelasan Relasi Antar Tabel
 
-Aplikasi Authbook menggunakan relasi One-to-Many dan Many-to-One.
+Aplikasi Authbook menerapkan hubungan One-to-Many dan Many-to-One menggunakan Eloquent ORM pada Laravel.
 
-**A. Relasi One-to-Many (Author ke Book)**
+### A. Relasi One-to-Many (Author ke Book)
 
 Relasi One-to-Many menunjukkan bahwa satu penulis dapat memiliki banyak buku.
 
-Pada Laravel, relasi tersebut menggunakan method `hasMany()`.
+Relasi ini diterapkan pada model `Author` menggunakan method `hasMany()`.
 
-Contoh implementasi pada model Author:
+Contoh kode:
 
 ```php
 public function books(): HasMany
@@ -61,15 +79,19 @@ public function books(): HasMany
 }
 ```
 
-Artinya, satu penulis dapat memiliki beberapa data buku yang tersimpan dalam tabel books.
+Penjelasan:
 
-**B. Relasi Many-to-One (Book ke Author)**
+- Satu Author dapat memiliki beberapa Book.
+- Data penulis dapat dihubungkan dengan seluruh buku yang ditulisnya.
+- Relasi menggunakan kolom `author_id` pada tabel books.
 
-Relasi Many-to-One menunjukkan bahwa banyak buku dapat dimiliki oleh satu penulis.
+### B. Relasi Many-to-One (Book ke Author)
 
-Pada Laravel, relasi tersebut menggunakan method `belongsTo()`.
+Relasi Many-to-One menunjukkan bahwa beberapa buku dapat dimiliki oleh satu penulis.
 
-Contoh implementasi pada model Book:
+Relasi ini diterapkan pada model `Book` menggunakan method `belongsTo()`.
+
+Contoh kode:
 
 ```php
 public function author(): BelongsTo
@@ -78,273 +100,343 @@ public function author(): BelongsTo
 }
 ```
 
-Artinya, setiap buku memiliki hubungan dengan satu penulis melalui kolom `author_id`.
+Penjelasan:
 
-**C. Foreign Key**
+- Setiap Book berhubungan dengan satu Author.
+- Informasi penulis dapat diperoleh melalui data buku.
+- Kolom `author_id` digunakan untuk menghubungkan kedua tabel.
 
-Foreign Key digunakan untuk menghubungkan tabel books dengan tabel authors.
+### C. Penggunaan Foreign Key
 
-Kolom `author_id` pada tabel books mengambil nilai dari kolom `id` pada tabel authors.
+Foreign Key merupakan atribut yang menghubungkan satu tabel dengan tabel lainnya.
 
-Dengan demikian, data buku dapat diketahui siapa penulisnya dan hubungan antar tabel tetap terorganisasi.
+Pada Authbook, kolom `author_id` pada tabel books mengacu pada kolom `id` pada tabel authors.
 
-### 1.3 Penjelasan Flow Aplikasi (Request hingga Response)
+Dengan adanya Foreign Key, hubungan antara data buku dan penulis dapat dikelola secara terstruktur.
 
-Aplikasi Authbook menggunakan framework Laravel dan Filament sebagai panel administrasi. Proses aplikasi dimulai ketika pengguna mengakses halaman melalui browser hingga sistem memberikan respons kembali.
+Selain itu, migration menggunakan pengaturan `onDelete('cascade')` sehingga penghapusan data penulis juga dirancang untuk menghapus data buku yang berhubungan dengannya.
 
-Berikut tahapan alur kerja aplikasi:
+## 1.3 Penjelasan Flow Aplikasi (Request hingga Response)
 
-1. **User Request**
+Aplikasi Authbook menggunakan Laravel sebagai framework utama dan Filament sebagai panel administrasi.
 
-   Pengguna membuka aplikasi melalui browser dan mengakses halaman administrasi Filament.
+Proses kerja aplikasi dimulai ketika pengguna mengakses halaman administrasi melalui browser. Request kemudian diproses oleh Laravel hingga menghasilkan response yang ditampilkan kembali kepada pengguna.
 
-2. **Routing**
+Berikut tahapan prosesnya:
 
-   Request diterima oleh Laravel dan diarahkan melalui sistem routing menuju panel administrasi yang sesuai.
+**1. User Request**
 
-3. **Authentication**
+Pengguna membuka browser dan mengakses halaman aplikasi Authbook, misalnya halaman login administrasi pada `/admin/login`.
 
-   Laravel memeriksa autentikasi pengguna untuk memastikan bahwa pengguna memiliki akses ke halaman administrasi.
+**2. Laravel Routing**
 
-4. **Filament Resource**
+Request diterima oleh Laravel dan diproses melalui sistem routing untuk menentukan tujuan permintaan.
 
-   Filament memproses permintaan melalui Resource yang berhubungan dengan model Author atau Book.
+**3. Authentication**
 
-5. **Model dan Eloquent ORM**
+Laravel memeriksa autentikasi pengguna sebelum memberikan akses ke halaman administrasi.
 
-   Model berkomunikasi dengan database menggunakan Eloquent ORM untuk mengambil, menambahkan, mengubah, atau menghapus data.
+**4. Filament Resource**
 
-6. **Database**
+Setelah pengguna berhasil masuk, Filament menangani permintaan melalui Resource yang berhubungan dengan model Author atau Book.
 
-   Database SQLite menyimpan dan mengelola data penulis serta buku.
+**5. Eloquent ORM**
 
-7. **Response**
+Eloquent ORM menghubungkan model Laravel dengan database untuk melakukan operasi pengelolaan data.
 
-   Hasil pemrosesan dikembalikan melalui Laravel dan ditampilkan kepada pengguna dalam bentuk halaman antarmuka Filament.
+**6. Database SQLite**
 
-**Diagram Alur Request hingga Response:**
+Database SQLite menyimpan data penulis dan buku. Operasi yang dapat dilakukan meliputi Create, Read, Update, dan Delete.
+
+**7. Response**
+
+Setelah proses selesai, Laravel mengembalikan hasil pemrosesan kepada browser untuk ditampilkan melalui antarmuka Filament.
+
+### Diagram Flow Request hingga Response
 
 ```text
-        USER
-          |
-          v
-       BROWSER
-          |
-          v
-    LARAVEL ROUTING
-          |
-          v
-   AUTHENTICATION
-          |
-          v
-   FILAMENT RESOURCE
-          |
-          v
-    ELOQUENT ORM
-          |
-          v
-     DATABASE
-       SQLITE
-          |
-          v
-   HASIL PEMROSESAN
-          |
-          v
-      RESPONSE
-          |
-          v
-     BROWSER USER
+          USER
+            |
+            v
+         BROWSER
+            |
+            v
+      LARAVEL ROUTING
+            |
+            v
+      AUTHENTICATION
+            |
+            v
+     FILAMENT RESOURCE
+            |
+            v
+       ELOQUENT ORM
+            |
+            v
+       DATABASE SQLITE
+            |
+            v
+     HASIL PEMROSESAN
+            |
+            v
+         RESPONSE
+            |
+            v
+       BROWSER USER
 ```
 
-Melalui alur tersebut, Laravel bertanggung jawab mengatur proses aplikasi, sedangkan Filament menyediakan antarmuka administrasi untuk mengelola data.
+Berdasarkan alur tersebut, Laravel bertanggung jawab terhadap pemrosesan aplikasi, Eloquent ORM mengelola komunikasi dengan database, sedangkan Filament menyediakan antarmuka administrasi untuk mengelola data.
 
 ---
 
-## 2. PERBANDINGAN DENGAN PENDEKATAN TRADISIONAL (7 POIN)
+# 2. PERBANDINGAN DENGAN PENDEKATAN TRADISIONAL (7 POIN)
 
-### 2.1 Perbandingan Membuat CRUD dengan Filament dan Manual
+## 2.1 Perbandingan Membuat CRUD dengan Filament dan Manual
 
-CRUD merupakan singkatan dari Create, Read, Update, dan Delete. CRUD digunakan untuk melakukan pengelolaan data dalam aplikasi.
+CRUD merupakan singkatan dari Create, Read, Update, dan Delete. CRUD merupakan operasi dasar yang digunakan untuk mengelola data dalam suatu aplikasi.
 
-Dalam pengembangan aplikasi Authbook, Filament digunakan untuk membantu pembuatan panel administrasi dan pengelolaan data.
+Pada aplikasi Authbook, Filament digunakan sebagai alat bantu untuk membuat panel administrasi yang mendukung pengelolaan data.
 
-Terdapat dua pendekatan yang dapat digunakan untuk membuat CRUD, yaitu menggunakan Filament dan membuat CRUD secara manual.
+Terdapat dua pendekatan dalam pembuatan CRUD, yaitu menggunakan Filament dan menggunakan pendekatan manual dengan Laravel.
 
-**A. Menggunakan Filament**
+### A. Pendekatan Menggunakan Filament
 
-Filament merupakan library berbasis Laravel yang membantu pengembang membuat panel administrasi dengan lebih cepat.
+Filament merupakan library berbasis Laravel yang digunakan untuk membangun panel administrasi.
 
 Dengan menggunakan Filament, pengembang dapat membuat Resource yang terhubung dengan model untuk mengelola data.
 
-Beberapa fitur yang tersedia antara lain:
-- Membuat data baru melalui form.
-- Menampilkan data dalam bentuk tabel.
-- Mengubah data yang sudah tersimpan.
-- Menghapus data.
-- Melakukan pencarian data.
-- Menggunakan filter pada tabel.
-- Menampilkan detail data.
+Pada aplikasi Authbook, Resource dapat digunakan untuk mengelola data Author dan Book.
 
-Pendekatan ini mengurangi kebutuhan untuk membuat antarmuka CRUD dari awal.
+Beberapa kemampuan yang disediakan Filament meliputi:
 
-**B. Menggunakan Pendekatan Manual**
+1. Membuat data baru melalui form.
+2. Menampilkan data dalam bentuk tabel.
+3. Mengubah data yang telah tersimpan.
+4. Menghapus data.
+5. Melakukan pencarian data.
+6. Menggunakan filter pada tabel.
+7. Menampilkan detail data.
 
-Pendekatan manual merupakan metode pembuatan CRUD dengan menulis kode program sendiri menggunakan Laravel.
+Penggunaan Filament dapat mengurangi penulisan kode berulang karena komponen administrasi telah disediakan oleh library.
+
+### B. Pendekatan Manual Menggunakan Laravel
+
+Pendekatan manual merupakan metode pembuatan CRUD dengan menulis kode program sendiri menggunakan fitur Laravel.
 
 Pengembang perlu membuat beberapa komponen, seperti:
-- Controller untuk mengatur proses CRUD.
-- Route untuk menghubungkan URL dengan controller.
-- Model untuk berinteraksi dengan database.
-- View menggunakan Blade untuk menampilkan halaman.
-- Form untuk memasukkan dan mengubah data.
-- Validasi untuk memeriksa data yang dimasukkan.
-- Proses penyimpanan, pengubahan, dan penghapusan data.
 
-Pendekatan manual memberikan kebebasan lebih besar dalam menentukan tampilan dan alur kerja aplikasi.
+1. Model untuk berinteraksi dengan database.
+2. Migration untuk membuat struktur tabel.
+3. Controller untuk mengatur proses CRUD.
+4. Route untuk menghubungkan URL dengan controller.
+5. View Blade untuk menampilkan antarmuka.
+6. Form untuk memasukkan dan mengubah data.
+7. Validasi untuk memeriksa data yang dimasukkan.
 
-### 2.2 Kelebihan dan Kekurangan Masing-Masing
+Pendekatan manual memberikan kebebasan kepada pengembang dalam menentukan tampilan, proses, dan alur kerja aplikasi.
 
-| Aspek | Filament | Manual |
+## 2.2 Kelebihan dan Kekurangan Masing-Masing
+
+Berikut merupakan perbandingan penggunaan Filament dan pendekatan manual:
+
+| Aspek | Filament | Manual Laravel |
 |---|---|---|
-| Kecepatan | Lebih cepat dibuat | Membutuhkan waktu lebih lama |
+| Kecepatan | Lebih cepat | Membutuhkan waktu lebih lama |
 | Penulisan kode | Lebih sedikit | Lebih banyak |
 | Tampilan | Komponen sudah tersedia | Dibuat sendiri |
-| Kustomisasi | Mengikuti komponen Filament | Lebih bebas |
-| Pembelajaran | Perlu memahami Resource | Memahami proses CRUD secara langsung |
-| Pemeliharaan | Terbantu struktur Resource | Bergantung pada struktur kode sendiri |
-| Ketergantungan | Bergantung pada library | Lebih sedikit ketergantungan tambahan |
+| Kustomisasi | Mengikuti komponen Filament | Lebih fleksibel |
+| CRUD | Lebih praktis | Dibangun sendiri |
+| Pencarian | Komponen tersedia | Harus dibuat sendiri |
+| Filter | Komponen tersedia | Harus dibuat sendiri |
+| Pemeliharaan | Terstruktur melalui Resource | Bergantung pada struktur kode |
+| Pembelajaran | Mempelajari konsep Resource | Memahami proses CRUD secara langsung |
 
-**Kelebihan Filament:**
+### A. Kelebihan Filament
 
 1. Mempercepat proses pembuatan aplikasi CRUD.
 2. Menyediakan komponen form dan tabel.
 3. Memiliki fitur pencarian dan filter.
 4. Mengurangi penulisan kode berulang.
 5. Mempermudah pembuatan panel administrasi.
+6. Terintegrasi dengan model dan Eloquent ORM Laravel.
 
-**Kekurangan Filament:**
+### B. Kekurangan Filament
 
 1. Pengembang harus mempelajari struktur dan cara kerja Filament.
-2. Kustomisasi tertentu dapat membutuhkan pemahaman lebih lanjut.
+2. Beberapa kustomisasi membutuhkan pemahaman lebih lanjut.
 3. Bergantung pada kompatibilitas library dengan versi Laravel.
-4. Kurang fleksibel apabila aplikasi membutuhkan alur antarmuka yang sangat khusus.
+4. Tidak selalu cocok untuk aplikasi yang memiliki alur antarmuka sangat khusus.
 
-**Kelebihan Pendekatan Manual:**
+### C. Kelebihan Pendekatan Manual
 
 1. Memberikan kebebasan dalam merancang tampilan aplikasi.
 2. Mempermudah pengaturan alur kerja sesuai kebutuhan.
 3. Membantu memahami proses CRUD secara mendalam.
-4. Tidak terlalu bergantung pada library tambahan.
+4. Memberikan kontrol lebih besar terhadap kode program.
+5. Tidak membutuhkan library panel administrasi tambahan.
 
-**Kekurangan Pendekatan Manual:**
+### D. Kekurangan Pendekatan Manual
 
-1. Membutuhkan lebih banyak waktu pengembangan.
+1. Membutuhkan waktu pengembangan lebih lama.
 2. Penulisan kode lebih banyak.
 3. Pengembang harus membuat tampilan dan validasi sendiri.
 4. Pemeliharaan dapat menjadi lebih sulit apabila kode tidak terorganisasi.
 
-### 2.3 Kapan Sebaiknya Menggunakan Filament dan Kapan Tidak?
+## 2.3 Kapan Sebaiknya Menggunakan Filament dan Kapan Tidak?
 
-**Filament sebaiknya digunakan ketika:**
+### A. Filament Sebaiknya Digunakan Ketika:
 
 1. Membuat aplikasi administrasi atau dashboard.
 2. Membutuhkan pengelolaan data CRUD dengan cepat.
-3. Membuat sistem pengelolaan buku, data pengguna, produk, atau kategori.
+3. Membuat sistem pengelolaan buku, pengguna, produk, atau kategori.
 4. Membutuhkan fitur tabel, pencarian, filter, dan form.
-5. Mengembangkan aplikasi berbasis Laravel yang sesuai dengan kebutuhan Filament.
+5. Mengembangkan aplikasi Laravel yang membutuhkan panel administrasi.
 
-**Filament tidak harus digunakan ketika:**
+### B. Filament Tidak Harus Digunakan Ketika:
 
 1. Aplikasi membutuhkan desain antarmuka yang sangat khusus.
 2. Memerlukan alur interaksi yang tidak sesuai dengan komponen Filament.
-3. Pengembangan lebih berfokus pada pemahaman dasar proses CRUD.
+3. Pengembangan lebih berfokus pada pembelajaran dasar proses CRUD.
 4. Penggunaan library tambahan tidak sesuai dengan kebutuhan proyek.
 
-Berdasarkan analisis tersebut, Filament lebih cocok digunakan untuk mempercepat pengembangan panel administrasi, sedangkan pendekatan manual lebih cocok ketika pengembang membutuhkan kontrol penuh terhadap proses dan tampilan aplikasi.
+### C. Kesimpulan Perbandingan
+
+Berdasarkan perbandingan tersebut, Filament lebih sesuai digunakan untuk mempercepat pembuatan panel administrasi dan pengelolaan data.
+
+Sementara itu, pendekatan manual lebih sesuai ketika pengembang membutuhkan kontrol penuh terhadap tampilan dan proses aplikasi.
+
+Dalam proyek Authbook, penggunaan Filament merupakan pilihan yang tepat karena aplikasi berfokus pada pengelolaan data penulis dan buku melalui panel administrasi.
 
 ---
 
-## 3. REFLEKSI PEMBELAJARAN (6 POIN)
+# 3. REFLEKSI PEMBELAJARAN (6 POIN)
 
-### 3.1 Apa yang Dipelajari dari Praktikum Ini?
+## 3.1 Apa yang Dipelajari dari Praktikum Ini?
 
-Melalui praktikum ini, saya memperoleh pemahaman mengenai pengembangan aplikasi web menggunakan framework Laravel dan library Filament.
+Melalui praktikum pengembangan Authbook, saya memperoleh pemahaman mengenai pembuatan aplikasi web menggunakan framework Laravel dan library Filament.
 
-Beberapa hal yang saya pelajari adalah:
+Beberapa hal yang saya pelajari antara lain:
 
 1. Memahami proses pembuatan proyek Laravel menggunakan Composer.
 2. Memahami konfigurasi database SQLite.
 3. Mempelajari pembuatan Model dan Migration.
 4. Memahami hubungan antar tabel menggunakan relasi One-to-Many dan Many-to-One.
 5. Memahami penggunaan Primary Key dan Foreign Key.
-6. Mempelajari penggunaan Filament untuk membuat panel administrasi.
-7. Memahami proses pengelolaan data menggunakan fitur CRUD.
-8. Mempelajari penggunaan Git dan GitHub untuk menyimpan serta mengelola kode program.
+6. Mempelajari penggunaan Eloquent ORM untuk berinteraksi dengan database.
+7. Memahami penggunaan Filament sebagai panel administrasi.
+8. Mempelajari pembuatan fitur CRUD.
+9. Memahami penggunaan Factory dan Seeder untuk menyediakan data contoh.
+10. Mempelajari penggunaan Git dan GitHub untuk menyimpan serta mengelola kode program.
 
 Selain itu, saya juga memahami bahwa Laravel dan Filament dapat digunakan bersama untuk membangun aplikasi pengelolaan data yang lebih terstruktur dan efisien.
 
-### 3.2 Kesulitan yang Dihadapi dan Cara Mengatasinya
+## 3.2 Kesulitan yang Dihadapi dan Cara Mengatasinya
 
-Selama mengerjakan praktikum, terdapat beberapa kendala yang saya temui.
+Selama proses pengerjaan proyek Authbook, terdapat beberapa kendala yang saya hadapi.
 
-**1. Kendala Instalasi Filament**
+### A. Kendala Instalasi Filament
 
 Pada proses instalasi Filament, saya mengalami kendala terkait persyaratan versi dan security advisory dari Composer.
 
-Cara mengatasinya adalah dengan memeriksa versi Laravel, PHP, dan dependensi yang digunakan, kemudian menyesuaikan proses instalasi dengan kompatibilitas library.
+Hal tersebut membuat proses instalasi membutuhkan pemeriksaan tambahan terhadap versi Laravel, PHP, dan dependensi yang digunakan.
 
-**2. Kendala pada Policy**
+**Cara mengatasi:**
 
-Saya mengalami kesalahan pada file AuthorPolicy karena deklarasi nama class tidak sesuai. Hal tersebut menyebabkan konflik dengan BookPolicy.
+Memeriksa versi PHP dan Laravel, membaca pesan error Composer, serta menyesuaikan proses instalasi dengan kompatibilitas library yang digunakan.
 
-Cara mengatasinya adalah dengan memeriksa nama class pada setiap file Policy dan memastikan bahwa nama class sesuai dengan nama file serta tanggung jawab masing-masing.
+### B. Kendala pada Policy
 
-**3. Kendala Pengelolaan Git dan GitHub**
+Saya mengalami kesalahan pada file `AuthorPolicy.php` karena deklarasi nama class tidak sesuai dengan nama file. Kesalahan tersebut menyebabkan konflik deklarasi class dengan `BookPolicy`.
+
+**Cara mengatasi:**
+
+Memeriksa kembali nama class pada masing-masing file Policy dan memastikan bahwa nama class sesuai dengan nama file serta tanggung jawab masing-masing.
+
+### C. Kendala Pengelolaan Git dan GitHub
 
 Saya juga mengalami beberapa kendala ketika mengunggah proyek ke GitHub, terutama terkait struktur folder, remote repository, dan proses push.
 
-Cara mengatasinya adalah dengan memeriksa direktori proyek, memastikan remote repository sudah benar, serta menggunakan perintah Git secara bertahap.
+**Cara mengatasi:**
 
-Dari kendala tersebut, saya belajar bahwa proses pengembangan aplikasi tidak hanya membutuhkan kemampuan menulis kode, tetapi juga kemampuan melakukan konfigurasi, membaca pesan kesalahan, dan mencari solusi.
+Memeriksa direktori proyek, memastikan remote repository sudah benar, serta menggunakan perintah Git secara bertahap untuk menghindari kesalahan ketika mengunggah file.
 
-### 3.3 Rencana Pengembangan Aplikasi Selanjutnya
+### D. Kendala Memahami Relasi Database
 
-Untuk pengembangan aplikasi Authbook selanjutnya, terdapat beberapa fitur yang dapat ditambahkan, yaitu:
+Pada awal pengerjaan, saya perlu memahami bagaimana hubungan antara tabel Author dan Book bekerja, khususnya penggunaan Foreign Key dan method relasi Eloquent.
 
-1. **Pengelolaan Data yang Lebih Lengkap**
+**Cara mengatasi:**
 
-   Menambahkan informasi buku seperti kategori, deskripsi, dan tanggal penerbitan.
+Mempelajari kembali fungsi `hasMany()` dan `belongsTo()`, kemudian memeriksa hubungan data melalui Laravel Tinker.
 
-2. **Fitur Peminjaman Buku**
+Dari berbagai kendala tersebut, saya belajar bahwa proses pengembangan aplikasi tidak hanya membutuhkan kemampuan menulis kode, tetapi juga kemampuan membaca pesan kesalahan, melakukan konfigurasi, dan mencari solusi secara mandiri.
 
-   Menambahkan fitur untuk mencatat proses peminjaman dan pengembalian buku.
+## 3.3 Rencana Pengembangan Aplikasi Selanjutnya
 
-3. **Pencarian dan Filter Lanjutan**
+Untuk pengembangan aplikasi Authbook selanjutnya, terdapat beberapa fitur yang dapat ditambahkan agar aplikasi menjadi lebih lengkap.
 
-   Mengembangkan pencarian berdasarkan judul, ISBN, penulis, dan status ketersediaan buku.
+### A. Pengelolaan Data yang Lebih Lengkap
 
-4. **Pengelolaan Hak Akses Pengguna**
+Menambahkan informasi buku seperti kategori, deskripsi, dan tanggal penerbitan agar data buku lebih terperinci.
 
-   Menambahkan pembagian hak akses antara administrator dan pengguna biasa.
+### B. Fitur Peminjaman Buku
 
-5. **Laporan Data Buku**
+Menambahkan fitur untuk mencatat proses peminjaman dan pengembalian buku sehingga status ketersediaan buku dapat dikelola dengan lebih baik.
 
-   Menambahkan fitur laporan jumlah buku, jumlah penulis, serta buku yang sedang dipinjam.
+### C. Pencarian dan Filter Lanjutan
 
-6. **Pengembangan Tampilan Aplikasi**
+Mengembangkan fitur pencarian berdasarkan judul, ISBN, nama penulis, dan status ketersediaan buku.
 
-   Mengembangkan tampilan antarmuka agar lebih menarik, mudah digunakan, dan responsif.
+### D. Pengelolaan Hak Akses Pengguna
 
-Dengan pengembangan tersebut, aplikasi Authbook diharapkan dapat menjadi sistem pengelolaan buku yang lebih lengkap dan dapat digunakan untuk kebutuhan administrasi perpustakaan.
+Menambahkan pembagian hak akses antara administrator dan pengguna biasa agar pengelolaan aplikasi lebih terkontrol.
+
+### E. Laporan Data Buku
+
+Menambahkan fitur laporan yang menampilkan jumlah buku, jumlah penulis, serta jumlah buku yang tersedia dan sedang dipinjam.
+
+### F. Pengembangan Tampilan Aplikasi
+
+Mengembangkan tampilan antarmuka agar lebih menarik, mudah digunakan, dan responsif pada berbagai ukuran perangkat.
+
+Dengan adanya pengembangan tersebut, aplikasi Authbook diharapkan dapat menjadi sistem pengelolaan buku yang lebih lengkap dan dapat digunakan untuk kebutuhan administrasi perpustakaan.
 
 ---
 
-## KESIMPULAN
+# 4. DOKUMENTASI HASIL PRAKTIKUM
+
+Untuk melengkapi laporan, berikut dokumentasi yang dapat dilampirkan sebagai bukti pengerjaan.
+
+| No. | Dokumentasi | Keterangan |
+|---|---|---|
+| 1 | Diagram ERD | Hubungan tabel Authors dan Books |
+| 2 | Struktur Database | Bukti tabel authors dan books |
+| 3 | Admin Panel | Halaman login dan dashboard Filament |
+| 4 | Data Authors | Daftar penulis yang tersimpan |
+| 5 | Data Books | Daftar buku yang tersimpan |
+| 6 | Form CRUD | Form tambah dan edit buku |
+| 7 | Search Results | Bukti pencarian data buku |
+| 8 | Active Filter | Bukti penggunaan filter data |
+
+**Catatan:** Screenshot harus berasal dari hasil aplikasi yang benar-benar dijalankan. Gambar dapat disimpan dalam folder `screenshots` pada repository GitHub.
+
+---
+
+# 5. KESIMPULAN
 
 Berdasarkan hasil analisis dan dokumentasi, dapat disimpulkan bahwa penggunaan Laravel dan Filament dapat membantu proses pengembangan aplikasi pengelolaan data buku.
 
 Laravel menyediakan struktur pengembangan aplikasi, sedangkan Filament membantu pembuatan panel administrasi dan fitur CRUD secara lebih efisien.
 
-Melalui aplikasi Authbook, saya dapat memahami hubungan antar tabel dalam database, penggunaan Eloquent ORM, proses request dan response, serta perbedaan antara pembuatan CRUD menggunakan Filament dan pendekatan manual.
+Melalui proyek Authbook, saya dapat memahami hubungan antar tabel dalam database, penggunaan Eloquent ORM, proses request dan response, serta perbedaan antara pembuatan CRUD menggunakan Filament dan pendekatan manual.
 
-Praktikum ini juga memberikan pengalaman dalam menyelesaikan permasalahan teknis selama proses pengembangan aplikasi. Dengan demikian, pengetahuan yang diperoleh dapat menjadi dasar untuk mengembangkan aplikasi web yang lebih kompleks pada praktikum berikutnya.
+Selain itu, praktikum ini memberikan pengalaman dalam menyelesaikan berbagai permasalahan teknis selama proses pengembangan aplikasi, mulai dari instalasi dependensi, konfigurasi database, pembuatan relasi model, hingga pengelolaan repository GitHub.
+
+Dengan demikian, pengetahuan dan pengalaman yang diperoleh melalui praktikum ini dapat menjadi dasar untuk mengembangkan aplikasi web yang lebih kompleks pada praktikum berikutnya.
+
+---
+
+**Ridwan Odi Nugroho**  
+**4524210089**  
+Teknik Informatika — Universitas Pancasila
+
+*Praktikum Pemrograman Berbasis Web — Pertemuan 8*
